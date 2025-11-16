@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Teacher Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">Teacher Dashboard</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold text-gray-700">Total Classes</h3>
+            <p class="text-4xl font-bold text-indigo-600">{{ total_classes }}</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold text-gray-700">Total Students</h3>
+            <p class="text-4xl font-bold text-indigo-600">{{ total_students }}</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold text-gray-700">Current Classes</h3>
+            <p class="text-4xl font-bold text-indigo-600">{{ current_classes.count }}</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold text-gray-700">Upcoming Classes</h3>
+            <p class="text-4xl font-bold text-indigo-600">{{ upcoming_classes.count }}</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md">
+        <div class="flex justify-between items-center p-6 border-b">
+            <h2 class="text-2xl font-semibold text-gray-800">My Classes</h2>
+            <a href="{% url 'class_create' %}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-medium">
+                + Create Class
+            </a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Students</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for class in all_classes %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ class.name }}</div>
+                                <div class="text-sm text-gray-500">{{ class.description|truncatewords:10 }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                {{ class.start_time|time:"g:i A" }} - {{ class.end_time|time:"g:i A" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowpost">
+                                <div class="text-sm font-medium text-gray-900">{{ class.name }}</div>
+                                <div class="text-sm text-gray-500">{{ class.description|truncatewords:10 }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                {{ class.start_time|time:"g:i A" }} - {{ class.end_time|time:"g:i A" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ class.enrolled_student_count }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                {% if class.is_active_now %}
+                                    <a href="{% url 'scan_attendance' class.id %}" class="text-green-600 hover:text-green-900 mr-3">Scan</a>
+                                    <a href="{% url 'mark_attendance' class.id %}" class="text-gray-500 hover:text-gray-800 mr-3">Manual</a>
+                                {% else %}
+                                    <span class="text-gray-400 mr-3" title="Not active">Scan</span>
+                                    <a href="{% url 'mark_attendance' class.id %}" class="text-gray-500 hover:text-gray-800 mr-3">Manual</a>
+                                {% endif %}
+                                <a href="{% url 'teacher_attendance_history' class.id %}" class="text-purple-600 hover:text-purple-900 mr-3">History</a>
+                                <a href="{% url 'manage_enrollments' class.id %}" class="text-blue-600 hover:text-blue-900 mr-3">Students</a>
+                                <a href="{% url 'class_update' class.pk %}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="px-6 py-4 text-center text-gray-500">You have not created any classes.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
