@@ -3,6 +3,7 @@
 {% block title %}Scan Attendance{% endblock %}
 
 {% block content %}
+{% load static %}
 <div class="container mx-auto max-w-lg">
 
     <!-- Header -->
@@ -107,7 +108,7 @@
 </div>
 
 {% if is_active %}
-<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script src="{% static 'js/html5-qrcode.js' %}" type="text/javascript"></script>
 
 <style>
     @keyframes scan {

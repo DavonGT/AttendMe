@@ -18,6 +18,9 @@ def is_teacher(user):
 def is_student(user):
     return hasattr(user, 'student')
 
+def is_admin(user):
+    return user.is_staff
+
 # --- Main Dashboard View ---
 
 class DashboardView(LoginRequiredMixin, View):
@@ -29,6 +32,8 @@ class DashboardView(LoginRequiredMixin, View):
             return redirect('teacher_dashboard')
         elif is_student(request.user):
             return redirect('student_dashboard')
+        elif is_admin(request.user):
+            return redirect('admin/')
         else:
             # Handle users who are logged in but not linked
             # to a Teacher or Student profile (e.g., superusers).
