@@ -3,57 +3,113 @@
 {% block title %}Mark Attendance{% endblock %}
 
 {% block content %}
-<div class="bg-white p-8 rounded-lg shadow-md max-w-3xl mx-auto">
-    <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ class_obj.name }}</h1>
-    <p class="text-lg text-gray-600 mb-4">Date: {{ today|date:"F d, Y" }}</p>
-    <p class="text-md text-gray-700 mb-6">Class Time: {{ class_obj.start_time|time:"g:i A" }} - {{ class_obj.end_time|time:"g:i A" }}</p>
+<div class="max-w-3xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-sm text-gray-500 mb-1">
+                <a href="{% url 'teacher_dashboard' %}" class="hover:text-primary-600 transition-colors">Dashboard</a>
+                <span>/</span>
+                <span>Manual Attendance</span>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">{{ class_obj.name }}</h1>
+            <p class="text-sm text-gray-500">
+                <span class="font-medium text-gray-900">{{ today|date:"l, F j, Y" }}</span> •
+                {{ class_obj.start_time|time:"g:i A" }} - {{ class_obj.end_time|time:"g:i A" }}
+            </p>
+        </div>
+        <a href="{% url 'teacher_dashboard' %}"
+            class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm transition-colors">
+            Cancel
+        </a>
+    </div>
 
     {% if is_active %}
-        <form method="POST">
-            {% csrf_token %}
-            <div class="space-y-6">
-                {% for student in students %}
-                    <div class="flex items-center justify-between p-4 border rounded-lg">
-                        <span class="text-lg font-medium text-gray-800">{{ student.name }}</span>
-                        <!-- We must include this hidden field to know which students were on the form -->
-                        <input type="hidden" name="student_id" value="{{ student.id }}">
-                        
-                        <div class="flex space-x-4">
-                            {% with student_status=student.status %}
-                            <label class="flex items-center space-x-2">
-                                <input type="radio" name="status_{{ student.id }}" value="P" class="form-radio text-green-600" {% if student_status == 'P' %}checked{% endif %}>
-                                <span class="text-green-700 font-medium">Present</span>
-                            </label>
-                            <label class="flex items-center space-x-2">
-                                <input type="radio" name="status_{{ student.id }}" value="L" class="form-radio text-yellow-600" {% if student_status == 'L' %}checked{% endif %}>
-                                <span class="text-yellow-700 font-medium">Late</span>
-                            </label>
-                            <label class="flex items-center space-x-2">
-                                <input type="radio" name="status_{{ student.id }}" value="A" class="form-radio text-red-600" {% if student_status == 'A' %}checked{% endif %}>
-                                <span class="text-red-700 font-medium">Absent</span>
-                            </label>
-                            {% endwith %}
-                        </div>
-                    </div>
-                {% empty %}
-                    <p class="text-gray-500">There are no students enrolled in this class.</p>
-                {% endfor %}
+    <form method="POST" class="space-y-6">
+        {% csrf_token %}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Student List</h3>
+                <span class="text-xs font-medium text-gray-500">{{ students|length }} Students</span>
             </div>
 
-            {% if students %}
-                <div class="mt-8">
-                    <button type="submit" class="w-full px-6 py-3 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Submit Attendance
-                    </button>
+            <div class="divide-y divide-gray-100">
+                {% for student in students %}
+                <div
+                    class="p-4 sm:p-6 hover:bg-gray-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-sm">
+                            {{ student.name|slice:":1" }}
+                        </div>
+                        <div>
+                            <span class="block text-sm font-medium text-gray-900">{{ student.name }}</span>
+                            <span class="block text-xs text-gray-500">ID: {{ student.id }}</span>
+                        </div>
+                    </div>
+
+                    <!-- We must include this hidden field to know which students were on the form -->
+                    <input type="hidden" name="student_id" value="{{ student.id }}">
+
+                    <div class="flex bg-gray-100 p-1 rounded-lg">
+                        {% with student_status=student.status %}
+                        <label class="relative flex-1 sm:flex-none">
+                            <input type="radio" name="status_{{ student.id }}" value="P" class="peer sr-only" {% if student_status == "P" %}checked{% endif %}>
+                            <div
+                                class="px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 cursor-pointer transition-all peer-checked:bg-white peer-checked:text-green-700 peer-checked:shadow-sm hover:text-gray-700 text-center">
+                                Present
+                            </div>
+                        </label>
+                        <label class="relative flex-1 sm:flex-none">
+                            <input type="radio" name="status_{{ student.id }}" value="L" class="peer sr-only" {% if student_status == 'L' %}checked{% endif %}>
+                            <div
+                                class="px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 cursor-pointer transition-all peer-checked:bg-white peer-checked:text-yellow-700 peer-checked:shadow-sm hover:text-gray-700 text-center">
+                                Late
+                            </div>
+                        </label>
+                        <label class="relative flex-1 sm:flex-none">
+                            <input type="radio" name="status_{{ student.id }}" value="A" class="peer sr-only" {% if student_status == 'A' %}checked{% endif %}>
+                            <div
+                                class="px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 cursor-pointer transition-all peer-checked:bg-white peer-checked:text-red-700 peer-checked:shadow-sm hover:text-gray-700 text-center">
+                                Absent
+                            </div>
+                        </label>
+                        {% endwith %}
+                    </div>
                 </div>
-            {% endif %}
-        </form>
-    {% else %}
-        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
-            <p class="font-bold">Attendance Closed</p>
-            <p>Attendance for this class can only be marked during the class time.</p>
+                {% empty %}
+                <div class="p-12 text-center text-gray-500">
+                    <p>There are no students enrolled in this class.</p>
+                </div>
+                {% endfor %}
+            </div>
         </div>
-        <a href="{% url 'teacher_dashboard' %}" class="inline-block mt-6 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">&larr; Back to Dashboard</a>
+
+        {% if students %}
+        <div class="flex justify-end pt-2">
+            <button type="submit"
+                class="w-full sm:w-auto px-8 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 shadow-sm transition-colors">
+                Save Attendance
+            </button>
+        </div>
+        {% endif %}
+    </form>
+    {% else %}
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 mb-4">
+            <svg class="h-6 w-6 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+        <h3 class="text-lg font-medium text-amber-900 mb-1">Attendance Closed</h3>
+        <p class="text-amber-700 mb-6">Attendance for this class can only be marked during the class time.</p>
+        <a href="{% url 'teacher_dashboard' %}"
+            class="inline-flex items-center px-4 py-2 bg-white border border-amber-300 rounded-lg text-sm font-medium text-amber-700 hover:bg-amber-50 transition-colors shadow-sm">
+            Return to Dashboard
+        </a>
+    </div>
     {% endif %}
 </div>
 {% endblock %}

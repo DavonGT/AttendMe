@@ -3,95 +3,177 @@
 {% block title %}Scan Attendance{% endblock %}
 
 {% block content %}
-<div class="container mx-auto max-w-lg p-4">
-    
+<div class="container mx-auto max-w-lg">
+
     <!-- Header -->
-    <div class="mb-6 text-center">
-        <h1 class="text-3xl font-bold text-gray-900">Scan Attendance</h1>
-        <p class="text-lg text-gray-700">Class: <span class="font-semibold">{{ class_obj.name }}</span></p>
-        <a href="{% url 'teacher_dashboard' %}" class="text-indigo-600 hover:underline text-sm">&larr; Back to Dashboard</a>
+    <div class="mb-8 text-center">
+        <div class="flex items-center justify-center gap-2 text-sm text-gray-500 mb-2">
+            <a href="{% url 'teacher_dashboard' %}" class="hover:text-primary-600 transition-colors">Dashboard</a>
+            <span>/</span>
+            <span>Scan</span>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-900 tracking-tight mb-2">Scan Attendance</h1>
+        <p class="text-gray-600">Class: <span class="font-semibold text-gray-900">{{ class_obj.name }}</span></p>
     </div>
 
     <!-- Toast Notification (Fixed at top) -->
-    <div id="toast-container" class="fixed top-20 left-0 right-0 z-50 hidden flex justify-center px-4">
-        <div id="toast-message" class="bg-white border-l-4 p-4 rounded shadow-lg flex items-center max-w-sm w-full">
+    <div id="toast-container"
+        class="fixed top-24 left-0 right-0 z-50 hidden flex justify-center px-4 pointer-events-none">
+        <div id="toast-message"
+            class="bg-white border-l-4 p-4 rounded-lg shadow-xl flex items-center max-w-sm w-full transform transition-all duration-300 pointer-events-auto">
             <!-- Content injected via JS -->
         </div>
     </div>
 
     {% if is_active %}
-        <!-- Scanner Container -->
-        <div class="bg-white p-2 rounded-lg shadow-md mb-6">
-            <div id="reader" class="w-full rounded overflow-hidden bg-gray-100"></div>
-            <p class="text-xs text-gray-500 text-center mt-2">Point camera at Student ID Barcode</p>
+    <!-- Scanner Container -->
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 mb-6">
+        <div class="flex justify-between items-center mb-3 px-1">
+            <h2 class="text-sm font-semibold text-gray-700">Camera Feed</h2>
+            <span id="scanner-status"
+                class="text-xs font-medium px-2 py-1 rounded border shadow-sm bg-gray-50 text-gray-500 border-gray-200">Initializing...</span>
         </div>
-
-        <!-- Session History List -->
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
-            <div class="bg-gray-50 px-4 py-3 border-b">
-                <h3 class="text-lg font-medium text-gray-900">Scanned this Session</h3>
+        <div class="relative rounded-xl overflow-hidden bg-gray-900 aspect-square">
+            <div id="reader" class="w-full h-full"></div>
+            <div class="absolute inset-0 pointer-events-none border-[3px] border-white/20 rounded-xl"></div>
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div class="w-64 h-64 border-2 border-primary-500/50 rounded-lg relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-primary-500"></div>
+                    <div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-primary-500"></div>
+                    <div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-primary-500"></div>
+                    <div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-primary-500"></div>
+                    <!-- Laser Line -->
+                    <div id="laser" class="scanning-laser"></div>
+                </div>
             </div>
-            <ul id="scanned-list" class="divide-y divide-gray-200 max-h-60 overflow-y-auto">
-                <li id="empty-list-msg" class="px-4 py-4 text-sm text-gray-500 text-center">
-                    No students scanned yet.
-                </li>
-                <!-- List items will be added here by JS -->
-            </ul>
         </div>
+        <p class="text-sm text-gray-500 text-center mt-4 flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Point camera at Student ID Barcode
+        </p>
+    </div>
 
-        <!-- Hidden CSRF Token for JS -->
-        {% csrf_token %}
-    
-    {% else %}
-        <!-- Inactive State -->
-        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <!-- Heroicon name: solid/exclamation -->
-                    <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+    <!-- Session History List -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Scanned this Session</h3>
+            <span class="text-xs text-gray-500 bg-white px-2 py-1 rounded border border-gray-200 shadow-sm">Live</span>
+        </div>
+        <ul id="scanned-list" class="divide-y divide-gray-100 max-h-60 overflow-y-auto">
+            <li id="empty-list-msg" class="px-4 py-8 text-center">
+                <div class="flex flex-col items-center justify-center text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-2 opacity-50" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
+                    <span class="text-sm">No students scanned yet.</span>
                 </div>
-                <div class="ml-3">
-                    <p class="text-sm text-yellow-700">
-                        Attendance Closed. <br>
-                        Class time: {{ class_obj.start_time|time:"g:i A" }} - {{ class_obj.end_time|time:"g:i A" }}
-                    </p>
-                </div>
-            </div>
+            </li>
+            <!-- List items will be added here by JS -->
+        </ul>
+    </div>
+
+    <!-- Hidden CSRF Token for JS -->
+    {% csrf_token %}
+
+    {% else %}
+    <!-- Inactive State -->
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-6 text-center">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 mb-4">
+            <svg class="h-6 w-6 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
         </div>
+        <h3 class="text-lg font-medium text-amber-900 mb-1">Attendance Closed</h3>
+        <p class="text-amber-700 mb-4">
+            Class time: <span class="font-semibold">{{ class_obj.start_time|time:"g:i A" }}</span> - <span
+                class="font-semibold">{{ class_obj.end_time|time:"g:i A" }}</span>
+        </p>
+        <a href="{% url 'teacher_dashboard' %}"
+            class="inline-flex items-center px-4 py-2 bg-white border border-amber-300 rounded-lg text-sm font-medium text-amber-700 hover:bg-amber-50 transition-colors shadow-sm">
+            Return to Dashboard
+        </a>
+    </div>
     {% endif %}
 </div>
 
 {% if is_active %}
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
+<style>
+    @keyframes scan {
+        0% {
+            top: 0%;
+            opacity: 0;
+        }
+
+        10% {
+            opacity: 1;
+        }
+
+        90% {
+            opacity: 1;
+        }
+
+        100% {
+            top: 100%;
+            opacity: 0;
+        }
+    }
+
+    .scanning-laser {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #ef4444;
+        /* red-500 */
+        box-shadow: 0 0 4px #ef4444;
+        animation: scan 2s linear infinite;
+        display: none;
+        /* Hidden by default */
+    }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const classId = '{{ class_obj.id }}';
-        // Robust way to get CSRF token from the DOM
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        
+
         // UI Elements
         const toastContainer = document.getElementById('toast-container');
         const toastMessage = document.getElementById('toast-message');
         const scannedList = document.getElementById('scanned-list');
         const emptyListMsg = document.getElementById('empty-list-msg');
+        const scannerStatus = document.getElementById('scanner-status'); // We need to add this element
+        const laser = document.getElementById('laser'); // We need to add this element
+
+        // Scanner Instance
+        let html5QrCode;
+        let isScannerRunning = false;
 
         // Helper: Show Toast Notification
         function showToast(message, type) {
             toastContainer.classList.remove('hidden');
-            
+
             let borderColor = type === 'success' ? 'border-green-500' : 'border-red-500';
-            let textColor = type === 'success' ? 'text-green-700' : 'text-red-700';
-            let icon = type === 'success' 
-                ? `<svg class="h-6 w-6 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`
-                : `<svg class="h-6 w-6 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+            let textColor = type === 'success' ? 'text-green-800' : 'text-red-800';
+            let icon = type === 'success'
+                ? `<div class="bg-green-100 rounded-full p-1 mr-3"><svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>`
+                : `<div class="bg-red-100 rounded-full p-1 mr-3"><svg class="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></div>`;
 
-            toastMessage.className = `bg-white border-l-4 p-4 rounded shadow-lg flex items-center max-w-sm w-full ${borderColor}`;
-            toastMessage.innerHTML = `${icon} <div class="${textColor} font-medium">${message}</div>`;
+            toastMessage.className = `bg-white border-l-4 p-4 rounded-lg shadow-xl flex items-center max-w-sm w-full transform transition-all duration-300 pointer-events-auto ${borderColor}`;
+            toastMessage.innerHTML = `${icon} <div class="${textColor} font-medium text-sm">${message}</div>`;
 
-            // Auto hide after 3 seconds
             setTimeout(() => {
                 toastContainer.classList.add('hidden');
             }, 3000);
@@ -100,35 +182,49 @@
         // Helper: Add to Session History
         function addToHistory(name, id, time) {
             if (emptyListMsg) emptyListMsg.style.display = 'none';
-            
+
             const li = document.createElement('li');
-            li.className = 'px-4 py-3 flex justify-between items-center bg-green-50 animate-pulse'; // Flash effect
+            li.className = 'px-4 py-3 flex justify-between items-center bg-green-50 animate-pulse border-l-4 border-green-500';
             li.innerHTML = `
-                <div>
-                    <p class="text-sm font-medium text-gray-900">${name}</p>
-                    <p class="text-xs text-gray-500">ID: ${id}</p>
+                <div class="flex items-center gap-3">
+                    <div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-xs font-bold">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-900">${name}</p>
+                        <p class="text-xs text-gray-500 font-mono">ID: ${id}</p>
+                    </div>
                 </div>
-                <span class="text-xs text-gray-500">${time}</span>
+                <span class="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded border border-gray-100">${time}</span>
             `;
-            
-            // Insert at top
+
             scannedList.insertBefore(li, scannedList.firstChild);
-            
-            // Remove flash effect after animation
-            setTimeout(() => li.classList.remove('bg-green-50', 'animate-pulse'), 1000);
+
+            setTimeout(() => {
+                li.classList.remove('bg-green-50', 'animate-pulse', 'border-l-4', 'border-green-500');
+                li.classList.add('hover:bg-gray-50', 'transition-colors');
+            }, 2000);
         }
 
         // Core: Handle Successful Scan
         function onScanSuccess(decodedText, decodedResult) {
-            // 1. Pause scanner immediately
-            html5QrcodeScanner.pause();
+            if (isScannerRunning) {
+                try {
+                    html5QrCode.pause();
+                    isScannerRunning = false;
+                    if (laser) laser.style.display = 'none';
+                    updateStatus('Processing...', 'blue');
+                } catch (e) {
+                    console.warn("Failed to pause scanner", e);
+                }
+            }
 
-            // 2. Show "Processing" toast
             toastContainer.classList.remove('hidden');
-            toastMessage.className = `bg-white border-l-4 border-blue-500 p-4 rounded shadow-lg flex items-center max-w-sm w-full`;
-            toastMessage.innerHTML = `<svg class="animate-spin h-5 w-5 text-blue-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <div class="text-blue-700 font-medium">Processing ID: ${decodedText}...</div>`;
+            toastMessage.className = `bg-white border-l-4 border-blue-500 p-4 rounded-lg shadow-xl flex items-center max-w-sm w-full pointer-events-auto`;
+            toastMessage.innerHTML = `<svg class="animate-spin h-5 w-5 text-blue-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <div class="text-blue-700 font-medium text-sm">Processing ID: ${decodedText}...</div>`;
 
-            // 3. Send to API
             fetch("{% url 'api_mark_attendance' %}", {
                 method: 'POST',
                 headers: {
@@ -140,46 +236,64 @@
                     'class_id': classId
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    showToast(data.message, 'success');
-                    // Add to history list
-                    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    // Extract name from message roughly, or just use ID if name isn't clean
-                    addToHistory(data.message, decodedText, now); 
-                } else {
-                    showToast(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showToast('Network error occurred.', 'error');
-            })
-            .finally(() => {
-                // 4. Resume scanning after delay
-                setTimeout(() => {
-                    html5QrcodeScanner.resume();
-                }, 1500); // 1.5s delay to read the message
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast(data.message, 'success');
+                        const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        addToHistory(data.message, decodedText, now);
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Network error occurred.', 'error');
+                })
+                .finally(() => {
+                    setTimeout(() => {
+                        try {
+                            html5QrCode.resume();
+                            isScannerRunning = true;
+                            if (laser) laser.style.display = 'block';
+                            updateStatus('Scanning Active', 'green');
+                        } catch (e) {
+                            console.warn("Failed to resume scanner", e);
+                            // Try to restart if resume fails
+                            startScanner();
+                        }
+                    }, 1500);
+                });
         }
 
-        function onScanFailure(error) {
-            // Ignore frame failures, too noisy
+        function updateStatus(text, color) {
+            if (!scannerStatus) return;
+            scannerStatus.textContent = text;
+            scannerStatus.className = `text-xs font-medium px-2 py-1 rounded border shadow-sm bg-${color}-50 text-${color}-700 border-${color}-200`;
         }
 
-        // Initialize
-        let html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader", 
-            { 
-                fps: 10, 
-                qrbox: { width: 250, height: 250 },
-                aspectRatio: 1.0
-            },
-            /* verbose= */ false
-        );
-        
-        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+        // Initialize Scanner
+        function startScanner() {
+            html5QrCode = new Html5Qrcode("reader");
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+            updateStatus('Starting Camera...', 'gray');
+
+            html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
+                .then(() => {
+                    isScannerRunning = true;
+                    if (laser) laser.style.display = 'block';
+                    updateStatus('Scanning Active', 'green');
+                })
+                .catch(err => {
+                    console.error("Error starting scanner", err);
+                    showToast("Error accessing camera. Please ensure permissions are granted.", "error");
+                    updateStatus('Camera Error', 'red');
+                });
+        }
+
+        // Start immediately
+        startScanner();
     });
 </script>
 {% endif %}
