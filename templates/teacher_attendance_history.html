@@ -60,8 +60,7 @@
                             class="block w-full pl-3 pr-10 py-2 text-sm border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 rounded-lg shadow-sm appearance-none bg-white">
                             <option value="">All Dates</option>
                             {% for date_obj in dates %}
-                            <option value="{{ date_obj|date:'Y-m-d' }}" {% if selected_date==date_obj|date:'Y-m-d'
-                                %}selected{% endif %}>
+                            <option value="{{ date_obj|date:'Y-m-d' }}" {% if selected_date == date_obj %}selected{% endif %}>
                                 {{ date_obj|date:"F d, Y" }}
                             </option>
                             {% endfor %}
@@ -83,7 +82,7 @@
                         Filter
                     </button>
                     {% if selected_date %}
-                    <a href="{% url 'teacher_attendance_history' class_obj.id %}"
+                    <a href="{% url 'teacher_attendance_history' class_obj.id %}?date="
                         class="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium text-sm shadow-sm transition-colors text-center">
                         Clear
                     </a>
@@ -123,7 +122,7 @@
                             <div class="flex items-center">
                                 <div
                                     class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-xs font-bold mr-3">
-                                    {{ record.student.user.get_full_name|default:record.student.user.username|slice:":1"|upper }}
+                                    {{ record.student.user.get_full_name|default:record.student.user.username }}
                                 </div>
                                 <div class="text-sm font-medium text-gray-900">
                                     {{ record.student.user.get_full_name|default:record.student.user.username }}
