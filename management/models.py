@@ -5,14 +5,12 @@ from django.utils import timezone
 # Model to link a Django User to a Teacher profile
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    first_name = models.CharField(max_length=30, null=True, blank=True)
     middle_name = models.CharField(max_length=30, null=True, blank=True)
-    last_name = models.CharField(max_length=30, null=True, blank=True)
     employee_id = models.CharField(max_length=20, unique=True, null=True, blank=True, verbose_name="Employee ID")
 
     @property
     def full_name(self):
-        names = [self.first_name, self.middle_name[0] if self.middle_name else '', self.last_name]
+        names = [self.user.first_name, self.middle_name[0] if self.middle_name else '', self.user.last_name]
         return ' '.join(name for name in names if name)
     
     def __str__(self):
@@ -21,14 +19,12 @@ class Teacher(models.Model):
 # Model to link a Django User to a Student profile
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    first_name = models.CharField(max_length=30, null=True, blank=True)
     middle_name = models.CharField(max_length=30, null=True, blank=True)
-    last_name = models.CharField(max_length=30, null=True, blank=True)
     student_id = models.CharField(max_length=20, unique=True, null=True, blank=True, verbose_name="Student ID")
     
     @property
     def full_name(self):
-        names = [self.first_name, self.middle_name[0] if self.middle_name else '', self.last_name]
+        names = [self.user.first_name, self.middle_name[0] if self.middle_name else '', self.user.last_name]
         return ' '.join(name for name in names if name)
 
     def __str__(self):
