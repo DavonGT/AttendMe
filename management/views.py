@@ -389,7 +389,7 @@ class StudentDashboardView(LoginRequiredMixin, UserPassesTestMixin, View):
         if total_attendance > 0:
             attendance_percent = (present_attendance / total_attendance) * 100
         else:
-            attendance_percent = 100 # Default to 100 if no records yet
+            attendance_percent = 0 # Default to 100 if no records yet
 
         context = {
             'enrolled_classes': enrolled_classes,
