@@ -23,6 +23,7 @@ db.sqlite3
 media/
 staticfiles/
 local_settings.py
+/migrations/
 
 # Environment
 .env
